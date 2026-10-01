@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Gloock&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -22,6 +24,12 @@ body {
   color: #111111;
   overflow-x: hidden;
   min-height: 100vh;
+}
+
+/* Distinctive Editorial Serif Font */
+.font-editorial {
+  font-family: 'Gloock', Didot, 'Bodoni MT', 'Cinzel', serif;
+  font-weight: 400;
 }
 
 /* Minimal scrollbar */

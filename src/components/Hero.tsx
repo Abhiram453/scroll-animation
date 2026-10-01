@@ -8,8 +8,10 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-const WORD_1 = ["W", "E", "L", "C", "O", "M", "E"];
-const WORD_2 = ["I", "T", "Z", "F", "I", "Z", "Z"];
+// Headline words: DRIVE WITH PURPOSE
+const WORD_1 = ["D", "R", "I", "V", "E"];
+const WORD_2 = ["W", "I", "T", "H"];
+const WORD_3 = ["P", "U", "R", "P", "O", "S", "E"];
 
 const STATS = [
   { value: "58%", label: "Increase in pick up point use" },
@@ -24,6 +26,7 @@ export const Hero: React.FC = () => {
   const labelRef = useRef<HTMLDivElement>(null);
 
   const roadRef = useRef<HTMLDivElement>(null);
+  const trailRef = useRef<HTMLDivElement>(null);
   const carWrapperRef = useRef<HTMLDivElement>(null);
   const carImgRef = useRef<HTMLImageElement>(null);
 
@@ -40,6 +43,7 @@ export const Hero: React.FC = () => {
     const stage = stageRef.current;
     const label = labelRef.current;
     const road = roadRef.current;
+    const trail = trailRef.current;
     const carWrapper = carWrapperRef.current;
     const carImg = carImgRef.current;
     const letters = letterRefs.current.filter(Boolean) as HTMLSpanElement[];
@@ -55,6 +59,7 @@ export const Hero: React.FC = () => {
         opacity: 1,
         y: 0,
         scale: 1,
+        rotation: 0,
       });
       return;
     }
@@ -62,29 +67,34 @@ export const Hero: React.FC = () => {
     // -------------------------------------------------------------
     // 1. INITIAL STATE & LOAD ANIMATION (GSAP Timeline)
     // -------------------------------------------------------------
-    // Letters initially start hidden in a lower position beneath the road/car
+    // Letters initially start in lower/hidden position beneath headline baseline
     gsap.set(letters, {
-      y: 80,
+      y: 70,
       opacity: 0,
-      scale: 0.9,
+      scale: 0.94,
+      rotation: -1.5,
     });
+
+    if (trail) {
+      gsap.set(trail, { width: 0 });
+    }
 
     const introTl = gsap.timeline({
       defaults: { ease: "power2.out" },
       delay: 0.15,
     });
 
-    // 1. Small label fades in
+    // 1. Small brand label fades in
     introTl.fromTo(
       label,
-      { opacity: 0, y: -10 },
+      { opacity: 0, y: -8 },
       { opacity: 1, y: 0, duration: 0.6 }
     );
 
-    // 2. Car fades and settles into its starting position on the road
+    // 2. Car fades and settles onto starting position on the road
     introTl.fromTo(
       carImg,
-      { opacity: 0, scale: 0.94 },
+      { opacity: 0, scale: 0.95 },
       { opacity: 1, scale: 1, duration: 0.8, ease: "power2.out" },
       "-=0.4"
     );
@@ -92,21 +102,21 @@ export const Hero: React.FC = () => {
     // 3. Statistics animate in sequentially
     introTl.fromTo(
       statItems,
-      { opacity: 0, y: 16 },
+      { opacity: 0, y: 12 },
       { opacity: 1, y: 0, duration: 0.6, stagger: 0.08 },
       "-=0.5"
     );
 
-    // After the intro finishes: CAR AND EVERYTHING STOPS.
+    // After intro finishes: CAR AND EVERYTHING STOPS.
     // Only scroll controls progression.
 
     // -------------------------------------------------------------
     // 2. SCROLL-DRIVEN ANIMATION (GSAP ScrollTrigger)
     // -------------------------------------------------------------
-    // Calculate horizontal travel distance across the road
+    // Calculate total horizontal travel distance across the road
     const calculateTravel = () => {
       const roadWidth = road.offsetWidth || window.innerWidth;
-      const carWidth = carWrapper.offsetWidth || 240;
+      const carWidth = carWrapper.offsetWidth || 180;
       return Math.max(0, roadWidth - carWidth - 16);
     };
 
@@ -117,7 +127,16 @@ export const Hero: React.FC = () => {
       ScrollTrigger.refresh();
     };
 
+    const handleImgLoad = () => {
+      totalTravel = calculateTravel();
+      ScrollTrigger.refresh();
+    };
+
     window.addEventListener("resize", handleResize);
+
+    if (!carImg.complete) {
+      carImg.addEventListener("load", handleImgLoad);
+    }
 
     const scrollTl = gsap.timeline({
       scrollTrigger: {
@@ -125,7 +144,7 @@ export const Hero: React.FC = () => {
         start: "top top",
         end: "bottom top",
         pin: stage,
-        scrub: 1, // Direct, physical, smooth connection to scroll
+        scrub: 1, // Smooth, physical connection to user scroll
         anticipatePin: 1,
         invalidateOnRefresh: true,
       },
@@ -142,12 +161,25 @@ export const Hero: React.FC = () => {
       0
     );
 
-    // B. Subtle physical car motion (suspension tilt and micro vertical settling)
+    // B. Subtle wake/trail extending along the road behind the car
+    if (trail) {
+      scrollTl.to(
+        trail,
+        {
+          width: () => totalTravel + 30,
+          ease: "none",
+          duration: 1,
+        },
+        0
+      );
+    }
+
+    // C. Physical car motion (micro suspension tilt and vertical settling)
     scrollTl.to(
       carWrapper,
       {
-        rotation: -1,
-        y: 2,
+        rotation: -0.8,
+        y: 1.5,
         ease: "sine.inOut",
         duration: 0.3,
       },
@@ -157,8 +189,8 @@ export const Hero: React.FC = () => {
     scrollTl.to(
       carWrapper,
       {
-        rotation: 0.8,
-        y: -2,
+        rotation: 0.6,
+        y: -1.5,
         ease: "sine.inOut",
         duration: 0.4,
       },
@@ -176,30 +208,34 @@ export const Hero: React.FC = () => {
       0.8
     );
 
-    // C. Sequential letter reveal:
-    // As the car drives along the road, each letter emerges from below and rises into place!
-    const totalLetters = letters.length; // 14 letters
-    const startProgress = 0.06;
-    const endProgress = 0.86;
+    // D. Sequential letter reveal:
+    // As the car drives along the road, each letter emerges from below
+    // and settles into the exact, unified headline baseline!
+    const totalLetters = letters.length; // 16 letters
+    const startProgress = 0.05;
+    const endProgress = 0.88;
     const progressStep = (endProgress - startProgress) / totalLetters;
 
     letters.forEach((letter, i) => {
       const letterStartTime = startProgress + i * progressStep;
-      const letterDuration = progressStep * 1.6; // smooth overlapping lift
+      const letterDuration = progressStep * 1.5; // overlapping smooth lift
 
       scrollTl.fromTo(
         letter,
         {
-          y: 80, // initial position beneath the road/car
+          y: 70, // starts in lower position beneath the road/car level
           opacity: 0,
-          scale: 0.9,
+          scale: 0.94,
+          rotation: -1.5,
         },
         {
-          y: 0, // rises into headline position
+          y: 0, // finishes at exact 0px baseline
           opacity: 1,
           scale: 1,
+          rotation: 0, // finishes with exact 0deg rotation
           duration: letterDuration,
           ease: "power2.out",
+          immediateRender: false,
         },
         letterStartTime
       );
@@ -207,6 +243,7 @@ export const Hero: React.FC = () => {
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      carImg.removeEventListener("load", handleImgLoad);
       introTl.kill();
       scrollTl.kill();
       ScrollTrigger.getAll().forEach((st) => st.kill());
@@ -223,73 +260,110 @@ export const Hero: React.FC = () => {
       {/* Pinned 100vh Viewport Stage */}
       <div
         ref={stageRef}
-        className="sticky top-0 h-screen w-full flex flex-col justify-between items-center px-6 sm:px-12 md:px-16 pt-8 pb-10 overflow-hidden select-none"
+        className="sticky top-0 h-screen w-full flex flex-col justify-between items-center px-4 sm:px-8 md:px-16 pt-8 pb-10 overflow-hidden select-none"
       >
         {/* TOP: Small Minimal Brand / Micro-Label */}
         <div
           ref={labelRef}
-          className="w-full max-w-6xl mx-auto flex items-center justify-between text-[11px] font-mono tracking-[0.25em] text-[#666666] uppercase"
+          className="w-full max-w-6xl mx-auto flex items-center justify-between text-[11px] font-mono tracking-[0.25em] text-[#777777] uppercase"
         >
-          <span>ITZFIZZ / SCROLL STUDY</span>
-          <span className="hidden sm:inline text-[#888888]">SCROLL TO DRIVE</span>
+          <span>ITZFIZZ / MOTION STUDY</span>
+          <span className="hidden sm:inline text-[#999999]">SCROLL TO DRIVE</span>
         </div>
 
-        {/* UPPER/MIDDLE: Large Headline Area ("W E L C O M E   I T Z F I Z Z") */}
-        <div className="w-full max-w-6xl mx-auto flex flex-col items-center justify-center my-auto pt-4">
-          <div className="flex flex-wrap items-center justify-center gap-x-6 sm:gap-x-10 md:gap-x-14 text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6.5rem] font-black uppercase text-[#111111]">
-            {/* Word 1: W E L C O M E */}
-            <div className="flex items-center gap-x-1.5 sm:gap-x-2.5 md:gap-x-3.5">
-              {WORD_1.map((char, index) => (
-                <span
-                  key={`w1-${index}`}
-                  className="inline-block overflow-hidden py-1"
-                >
+        {/* UPPER/MIDDLE: Headline Area ("DRIVE WITH PURPOSE" in Gloock Serif) */}
+        <div className="w-full max-w-6xl mx-auto flex flex-col items-center justify-center my-auto pt-2">
+          <div className="w-full text-center">
+            {/* Headline is kept as ONE clean line on desktop */}
+            <h1 className="flex items-baseline justify-center flex-nowrap whitespace-nowrap gap-x-3 min-[400px]:gap-x-4 sm:gap-x-7 md:gap-x-10 lg:gap-x-12 text-2xl min-[400px]:text-3xl sm:text-5xl md:text-6xl lg:text-[4.25rem] xl:text-[4.75rem] uppercase text-[#111111] font-editorial tracking-[0.14em] sm:tracking-[0.18em] leading-none">
+              {/* Word 1: DRIVE */}
+              <span className="inline-flex items-baseline gap-x-0.5 sm:gap-x-1.5 md:gap-x-2">
+                {WORD_1.map((char, index) => (
                   <span
-                    ref={(el) => {
-                      letterRefs.current[index] = el;
-                    }}
-                    className="inline-block will-change-transform"
-                    style={{ transform: "translateY(80px)", opacity: 0 }}
+                    key={`w1-${index}`}
+                    className="inline-flex items-baseline overflow-hidden py-1.5 -my-1.5 leading-none select-none"
                   >
-                    {char}
+                    <span
+                      ref={(el) => {
+                        letterRefs.current[index] = el;
+                      }}
+                      className="letter-char inline-block leading-none will-change-transform font-editorial"
+                      style={{ transform: "translateY(70px)", opacity: 0 }}
+                    >
+                      {char}
+                    </span>
                   </span>
-                </span>
-              ))}
-            </div>
+                ))}
+              </span>
 
-            {/* Word 2: I T Z F I Z Z */}
-            <div className="flex items-center gap-x-1.5 sm:gap-x-2.5 md:gap-x-3.5">
-              {WORD_2.map((char, index) => (
-                <span
-                  key={`w2-${index}`}
-                  className="inline-block overflow-hidden py-1"
-                >
+              {/* Word 2: WITH */}
+              <span className="inline-flex items-baseline gap-x-0.5 sm:gap-x-1.5 md:gap-x-2">
+                {WORD_2.map((char, index) => (
                   <span
-                    ref={(el) => {
-                      letterRefs.current[WORD_1.length + index] = el;
-                    }}
-                    className="inline-block will-change-transform"
-                    style={{ transform: "translateY(80px)", opacity: 0 }}
+                    key={`w2-${index}`}
+                    className="inline-flex items-baseline overflow-hidden py-1.5 -my-1.5 leading-none select-none"
                   >
-                    {char}
+                    <span
+                      ref={(el) => {
+                        letterRefs.current[WORD_1.length + index] = el;
+                      }}
+                      className="letter-char inline-block leading-none will-change-transform font-editorial"
+                      style={{ transform: "translateY(70px)", opacity: 0 }}
+                    >
+                      {char}
+                    </span>
                   </span>
-                </span>
-              ))}
-            </div>
+                ))}
+              </span>
+
+              {/* Word 3: PURPOSE */}
+              <span className="inline-flex items-baseline gap-x-0.5 sm:gap-x-1.5 md:gap-x-2">
+                {WORD_3.map((char, index) => (
+                  <span
+                    key={`w3-${index}`}
+                    className="inline-flex items-baseline overflow-hidden py-1.5 -my-1.5 leading-none select-none"
+                  >
+                    <span
+                      ref={(el) => {
+                        letterRefs.current[WORD_1.length + WORD_2.length + index] = el;
+                      }}
+                      className="letter-char inline-block leading-none will-change-transform font-editorial"
+                      style={{ transform: "translateY(70px)", opacity: 0 }}
+                    >
+                      {char}
+                    </span>
+                  </span>
+                ))}
+              </span>
+            </h1>
           </div>
         </div>
 
-        {/* CENTER/LOWER: Road + Isolated Car */}
+        {/* CENTER/LOWER: Minimal Road + Grounded Isolated Car */}
         <div className="relative w-full max-w-6xl mx-auto my-auto flex flex-col justify-center">
-          {/* The Road Strip */}
+          {/* Road Container with Car riding on top */}
           <div
             ref={roadRef}
-            className="relative w-full h-[70px] sm:h-[85px] md:h-[95px] bg-[#18181b] rounded-2xl overflow-hidden shadow-inner flex items-center"
+            className="relative w-full h-[36px] sm:h-[42px] md:h-[48px] flex items-center"
           >
-            {/* Subtle Center Dashed Lane Marking */}
-            <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-[2px] border-b-2 border-dashed border-white/20" />
+            {/* Asphalt Surface Strip (Rounded Pill with clean clipping for lane divider & trail) */}
+            <div className="absolute inset-0 bg-[#1c1d21] rounded-full border-y border-neutral-300/60 overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
+              {/* Center Dashed Lane Divider */}
+              <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-[1.5px] border-b border-dashed border-white/20" />
 
-            {/* Isolated Car riding directly on the road */}
+              {/* Subtle surface wake/trail behind the vehicle */}
+              <div
+                ref={trailRef}
+                className="absolute left-0 top-0 bottom-0 pointer-events-none rounded-l-full will-change-[width]"
+                style={{
+                  width: 0,
+                  background: "linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.14) 100%)",
+                  borderRight: "2px solid rgba(255,255,255,0.35)",
+                }}
+              />
+            </div>
+
+            {/* Isolated Car visibly sitting directly ON the road (NOT clipped) */}
             <div
               ref={carWrapperRef}
               className="absolute left-2 top-1/2 -translate-y-1/2 z-20 will-change-transform pointer-events-none"
@@ -299,28 +373,28 @@ export const Hero: React.FC = () => {
                 ref={carImgRef}
                 src={`${basePath}/car.png`}
                 alt="McLaren 720S"
-                className="h-[55px] sm:h-[70px] md:h-[80px] w-auto object-contain select-none pointer-events-none drop-shadow-[0_12px_20px_rgba(0,0,0,0.45)] will-change-transform"
+                className="h-[50px] sm:h-[62px] md:h-[72px] w-auto object-contain select-none pointer-events-none drop-shadow-[0_10px_18px_rgba(0,0,0,0.4)] will-change-transform"
                 draggable={false}
               />
             </div>
           </div>
         </div>
 
-        {/* BOTTOM: Exactly Four Statistics (Minimal Typography) */}
-        <div className="w-full max-w-6xl mx-auto z-10 pt-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-10">
+        {/* BOTTOM: Four Minimal Secondary Statistics */}
+        <div className="w-full max-w-6xl mx-auto z-10 pt-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8">
             {STATS.map((stat, index) => (
               <div
                 key={index}
                 ref={(el) => {
                   statItemRefs.current[index] = el;
                 }}
-                className="flex flex-col items-start"
+                className="flex flex-col items-start border-l border-neutral-300/50 pl-3 sm:pl-4 py-0.5"
               >
-                <span className="text-3xl sm:text-4xl md:text-5xl font-black text-[#111111] tracking-tight">
+                <span className="text-xl sm:text-2xl font-light font-mono text-[#111111] tracking-tight">
                   {stat.value}
                 </span>
-                <span className="text-xs sm:text-sm text-[#666666] font-medium mt-1 leading-snug">
+                <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-[#777777] mt-0.5 leading-snug">
                   {stat.label}
                 </span>
               </div>

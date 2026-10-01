@@ -1,4 +1,4 @@
-# Scroll-Driven Hero Section Animation — WELCOME ITZFIZZ
+# Scroll-Driven Hero Section Animation — DRIVE WITH PURPOSE
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-18-blue?style=flat&logo=react)](https://react.dev/)
@@ -6,7 +6,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> A scroll-driven hero section animation where a car travels along a road as the user scrolls, and its movement sequentially reveals the letters of the headline one by one. Built with Next.js, React, Tailwind CSS, and GSAP ScrollTrigger.
+> A scroll-driven hero section animation where a car travels along a sleek road as the user scrolls, revealing the letters of the editorial headline **DRIVE WITH PURPOSE** one by one. Built with Next.js, React, Tailwind CSS, and GSAP ScrollTrigger.
 
 ---
 
@@ -19,25 +19,24 @@
 
 ## 🎯 Core Interaction & Architecture
 
-1. **Sequential Letter Reveal (Car-Driven Typography)**
-   - The headline is rendered as individual animated characters:
-     `W` `E` `L` `C` `O` `M` `E` &nbsp; `I` `T` `Z` `F` `I` `Z` `Z`.
-   - **Initial State:** Letters begin in a hidden/lower position (`y: 80px, opacity: 0`) beneath the road.
-   - **Scroll Interaction:** As the user scrolls down, the car drives horizontally along the road. Behind and as a direct result of the car's progression, each letter emerges upward and locks into place in the headline.
-   - **Reversibility:** Scrolling upward reverses the car and sinks the letters back down.
-   - **Full Assembly:** At 80–100% scroll progress, the complete headline `W E L C O M E   I T Z F I Z Z` is fully assembled.
+1. **Editorial Typography & Sequential Letter Reveal**
+   - **Headline:** `DRIVE WITH PURPOSE` set in high-fashion editorial serif Google Font **Gloock** on **one clean line on desktop**.
+   - **Individual Letter Animation:** Each of the 16 characters (`D` `R` `I` `V` `E` &nbsp; `W` `I` `T` `H` &nbsp; `P` `U` `R` `P` `O` `S` `E`) is masked in an `inline-flex items-baseline` container.
+   - **Scroll Interaction:** As the car advances along the road, letters sequentially emerge upward and settle into the exact, unified font baseline (`y: 0`, `opacity: 1`, `scale: 1`, `rotation: 0deg`).
+   - **Reversibility:** Scrolling upward reverses the car and sinks the letters back down smoothly with scrubbed GSAP interpolation.
 
-2. **Road & Isolated Vehicle**
-   - Clean horizontal asphalt road spanning across the center.
-   - High-resolution isolated supercar with full alpha transparency riding directly on the road.
+2. **Minimal Road & Isolated Vehicle**
+   - Sleek, thinner minimal road strip (`h-[36px]` to `h-[48px]`) with rounded pill contours and subtle dashed divider.
+   - Genuine isolated McLaren 720S top view sitting grounded directly **on** the road surface (never clipped).
+   - Subtle surface wake/trail expanding behind the vehicle as it drives.
    - Subtle, weighted physical motion (micro suspension tilt and vertical settling).
 
-3. **Four Core Statistics**
+3. **Four Secondary Statistics**
    - **58%** `Increase in pick up point use`
    - **23%** `Decreased in customer phone calls`
    - **27%** `Increase in pick up point use`
    - **40%** `Reduction in turnaround time`
-   - Pure typography: large numbers in `#111111`, concise labels in `#666666`, zero cards or borders.
+   - Minimal monospace numbers and understated labels, presented as clean secondary metrics with subtle border dividers.
 
 4. **Initial Load Animation (GSAP Timeline)**
    - Micro-label fades in.
