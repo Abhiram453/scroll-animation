@@ -1,4 +1,4 @@
-# AURA // DRIVE THE FUTURE — Scroll-Driven Hero Section Animation
+# FORM / MOTION — Scroll-Driven Hero Animation
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-18-blue?style=flat&logo=react)](https://react.dev/)
@@ -6,7 +6,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> An original, modern luxury electric hypercar hero section experience inspired by scroll-driven storytelling concepts, built with Next.js, React, Tailwind CSS, and GSAP ScrollTrigger.
+> An original minimal editorial study exploring movement, proportion, and scroll-driven interaction, built with Next.js, React, Tailwind CSS, and GSAP ScrollTrigger.
 
 ---
 
@@ -17,44 +17,47 @@
 
 ---
 
-## 🎨 Original Design Identity & Concept
+## 🎨 Design Philosophy & Concept
 
-- **Concept:** *"AURA // DRIVE THE FUTURE"* — A luxury electric GT hypercar product launch.
-- **Visual Style:** Deep charcoal studio atmosphere (`#0b0c0f`), warm titanium reflections, gold/amber hairline accents (`#d4af37`), generous negative space, and modern editorial typography.
-- **Hero Composition:**
-  - **Left / Editorial:** Large letter-spaced headline (`D R I V E   T H E   F U T U R E`) and supporting engineering narrative.
-  - **Center / Right:** Prominent, high-resolution metallic titanium GT coupe visual.
-  - **Bottom:** Four compact, typography-driven performance statistics:
-    - `03.2s` — 0–100 km/h Acceleration
-    - `620km` — Target WLTP Range
-    - `480hp` — Dual Motor Peak Power
-    - `92%` — Powertrain Efficiency
+- **Concept:** *"FORM / MOTION"* — An experimental editorial visual-design showcase exploring the calibration of weight, proportion, and scroll.
+- **Palette:** Warm architectural off-white (`#F5F4F0`), rich near-black (`#111111`), neutral muted gray (`#666666`), and subtle stone hairline dividers (`#D8D6CE`).
+- **Composition:**
+  - **Left Side:** Small eyebrow (`SCROLL STUDY / 01`), large letter-spaced headline (`M O V E   W I T H   P U R P O S E`), and concise supporting copy.
+  - **Right / Center:** High-resolution automotive product visual integrated into the composition with intentional whitespace (no cards, no dashboard, no UI clutter).
+  - **Bottom:** Four clean, typography-driven metrics:
+    - `03.2s` — 0–100 KM/H
+    - `620 KM` — MAX RANGE
+    - `480 HP` — PEAK POWER
+    - `92%` — EFFICIENCY
 
 ---
 
 ## ⚙️ Technical Motion Architecture
 
 1. **Initial Load Animation (GSAP Timeline)**
-   - Independent intro sequence (~1.1s):
-     - Headline lines slide up and reveal (`y: 35 -> 0, opacity: 0 -> 1, stagger: 0.1s`).
-     - Supporting copy fades in.
-     - Hypercar settles gracefully into resting position (`scale: 0.94 -> 1, opacity: 0 -> 1`).
-     - Performance statistics stagger up cleanly from the bottom.
-   - Vehicle remains stationary until the user begins scrolling.
+   - Independent intro sequence (~1.0s) with `power3.out` easing:
+     - Navigation fades in.
+     - Eyebrow fades upward (`opacity: 0 -> 1, y: 15 -> 0`).
+     - Headline reveals line-by-line (`opacity: 0 -> 1, y: 32 -> 0, stagger: 0.08s`).
+     - Supporting copy appears smoothly.
+     - Main visual settles into position (`opacity: 0 -> 1, scale: 0.95 -> 1, y: 20 -> 0`).
+     - Statistics appear sequentially (`opacity: 0 -> 1, y: 16 -> 0, stagger: 0.08s`).
+   - The visual remains stationary until the user begins scrolling.
 
 2. **Scroll-Driven Animation (GSAP ScrollTrigger)**
-   - Pinned hero stage (`pin: true`, `scrub: 1.2`).
-   - Movement strictly driven by scroll position (no timers, no autoplay, fully reversible on scroll up).
-   - Fluid cinematic trajectory:
-     - Translates horizontally across the frame (`xPercent: 0 -> -65%`).
-     - Dynamic scaling and subtle suspension steering yaw (`rotation: -1.6deg -> 0.8deg`).
-     - Headline undergoes subtle parallax depth fading (`opacity: 1 -> 0.3`).
-     - Milestone-based accent indicator lighting across performance metrics as scroll advances.
+   - Pinned hero stage (`pin: true`, `scrub: 1.2`, `anticipatePin: 1`) over a 260vh scroll runway.
+   - Movement strictly determined by user scroll position (no timers, no autoplay, fully reversible on scroll up).
+   - Motion path:
+     - Translates across the frame (`xPercent: 0 -> -60%`).
+     - Dynamic scaling and subtle suspension yaw (`rotation: -1.2deg -> 0.4deg -> -0.2deg`).
+     - Headline responds with subtle parallax depth (`y: -30px, opacity: 0.75`).
+     - Statistics react with subtle vertical translation (`y: -10px, opacity: 0.85`).
 
-3. **Performance Optimization**
-   - Strictly utilizes GPU-accelerated CSS transforms (`translate3d`, `scale`, `rotation`).
+3. **Performance & Code Quality**
+   - Strictly utilizes GPU-accelerated CSS transforms (`xPercent`, `scale`, `rotation`, `opacity`).
    - Zero React state re-renders during scroll ticks (using direct DOM manipulation & GSAP tweens).
-   - Zero layout thrashing or geometry recalculations on scroll.
+   - Fully respects `prefers-reduced-motion` accessibility preferences.
+   - Fully responsive for mobile (390px), tablet (768px-1024px), laptop (1366px-1440px), and desktop (1920px+).
 
 ---
 
@@ -63,18 +66,17 @@
 ```
 scroll-animation/
 ├── public/
-│   ├── hypercar.jpg         # High-resolution metallic titanium GT coupe visual
+│   ├── editorial_car.jpg    # High-resolution automotive visual on warm studio background
 │   └── .nojekyll            # Prevents GitHub Pages Jekyll asset filtering
 ├── src/
 │   ├── app/
-│   │   ├── globals.css      # Luxury dark palette & typography helpers
+│   │   ├── globals.css      # Warm off-white palette & typography styles
 │   │   ├── layout.tsx       # Root layout, viewport, and metadata
-│   │   └── page.tsx         # Main entry point coordinating sections
+│   │   └── page.tsx         # Focused coordinator (Navigation, Hero, Footer)
 │   └── components/
-│       ├── Header.tsx       # Minimal editorial brand header
-│       ├── Hero.tsx         # Pinned hero stage, GSAP ScrollTrigger & typography
-│       ├── NarrativeSection.tsx # Post-hero engineering pillars
-│       └── Footer.tsx       # Attribution & quick deliverable links
+│       ├── Navigation.tsx   # Minimal editorial navigation
+│       ├── Hero.tsx         # Pinned hero stage, GSAP ScrollTrigger & statistics
+│       └── Footer.tsx       # Perspective statement & repository links
 ├── next.config.mjs          # Static export & GitHub Pages basePath configuration
 ├── tailwind.config.js       # Color tokens, fonts, and letter spacing
 ├── tsconfig.json            # TypeScript compiler configuration

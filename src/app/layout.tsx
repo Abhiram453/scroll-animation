@@ -2,9 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AURA // DRIVE THE FUTURE — Scroll-Driven Hero Animation",
-  description: "An original luxury electric hypercar product-launch hero experience powered by Next.js, React, Tailwind CSS, and GSAP ScrollTrigger.",
-  keywords: ["AURA", "GSAP", "ScrollTrigger", "Next.js", "Tailwind CSS", "Scroll Animation", "Interactive UI"],
+  title: "FORM / MOTION — Scroll-Driven Hero Animation",
+  description: "An editorial exploration of movement, proportion, and scroll-driven interaction built with Next.js, React, Tailwind CSS, and GSAP ScrollTrigger.",
+  keywords: ["FORM / MOTION", "GSAP", "ScrollTrigger", "Next.js", "Tailwind CSS", "Scroll Animation", "Editorial Design"],
   authors: [{ name: "Abhiram" }],
 };
 
@@ -20,8 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="antialiased bg-[#0b0c0f] text-[#f5f5f7] selection:bg-[#d4af37] selection:text-black">
+    <html lang="en">
+      <body className="antialiased bg-[#f5f4f0] text-[#111111]">
         {children}
       </body>
     </html>

@@ -1,17 +1,15 @@
 "use client";
 
 import React from "react";
-import { Header } from "@/components/Header";
+import { Navigation } from "@/components/Navigation";
 import { Hero } from "@/components/Hero";
-import { NarrativeSection } from "@/components/NarrativeSection";
 import { Footer } from "@/components/Footer";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#0b0c0f] text-[#f5f5f7] relative">
-      <Header />
+    <main className="min-h-screen bg-[#f5f4f0] text-[#111111] relative">
+      <Navigation />
       <Hero />
-      <NarrativeSection />
       <Footer />
     </main>
   );

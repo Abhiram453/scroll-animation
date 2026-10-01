@@ -3,62 +3,33 @@
 import React, { useEffect, useRef, useMemo } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ArrowDown } from "lucide-react";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-interface StatItem {
-  id: string;
-  value: string;
-  unit: string;
-  label: string;
-  threshold: number; // scroll progress milestone (0.0 to 1.0)
-}
-
-const PERFORMANCE_STATS: StatItem[] = [
-  {
-    id: "stat-accel",
-    value: "03.2",
-    unit: "s",
-    label: "0–100 km/h Acceleration",
-    threshold: 0.2,
-  },
-  {
-    id: "stat-range",
-    value: "620",
-    unit: "km",
-    label: "Target WLTP Range",
-    threshold: 0.45,
-  },
-  {
-    id: "stat-power",
-    value: "480",
-    unit: "hp",
-    label: "Dual Motor Peak Power",
-    threshold: 0.7,
-  },
-  {
-    id: "stat-eff",
-    value: "92",
-    unit: "%",
-    label: "Powertrain Efficiency",
-    threshold: 0.9,
-  },
+const STATS = [
+  { value: "03.2", unit: "s", label: "0–100 KM/H" },
+  { value: "620", unit: "KM", label: "MAX RANGE" },
+  { value: "480", unit: "HP", label: "PEAK POWER" },
+  { value: "92", unit: "%", label: "EFFICIENCY" },
 ];
 
 export const Hero: React.FC = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+
+  const eyebrowRef = useRef<HTMLDivElement>(null);
   const headlineRef = useRef<HTMLDivElement>(null);
   const subtextRef = useRef<HTMLParagraphElement>(null);
-  const carWrapperRef = useRef<HTMLDivElement>(null);
-  const carImgRef = useRef<HTMLImageElement>(null);
-  const statsContainerRef = useRef<HTMLDivElement>(null);
-  const statBoxRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Base path for GitHub Pages compatibility
+  const visualWrapperRef = useRef<HTMLDivElement>(null);
+  const visualImgRef = useRef<HTMLImageElement>(null);
+
+  const statsRef = useRef<HTMLDivElement>(null);
+  const statItemRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Base path for GitHub Pages asset resolution
   const basePath = useMemo(() => {
     return process.env.NODE_ENV === "production" ? "/scroll-animation" : "";
   }, []);
@@ -66,132 +37,145 @@ export const Hero: React.FC = () => {
   useEffect(() => {
     const section = sectionRef.current;
     const stage = stageRef.current;
+    const eyebrow = eyebrowRef.current;
     const headline = headlineRef.current;
     const subtext = subtextRef.current;
-    const carWrapper = carWrapperRef.current;
-    const carImg = carImgRef.current;
-    const statBoxes = statBoxRefs.current.filter(Boolean) as HTMLDivElement[];
+    const visualWrapper = visualWrapperRef.current;
+    const visualImg = visualImgRef.current;
+    const statItems = statItemRefs.current.filter(Boolean) as HTMLDivElement[];
 
-    if (!section || !stage || !headline || !carWrapper || !carImg) return;
+    if (!section || !stage || !headline || !visualWrapper || !visualImg) return;
+
+    // Check for prefers-reduced-motion
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // -------------------------------------------------------------
     // 1. INITIAL LOAD ANIMATION (GSAP Timeline)
     // -------------------------------------------------------------
+    const headlineLines = headline.querySelectorAll(".headline-line");
+    const nav = document.querySelector(".site-nav");
+
     const introTl = gsap.timeline({
-      defaults: { ease: "power2.out" },
-      delay: 0.15,
+      defaults: { ease: "power3.out" },
+      delay: 0.1,
     });
 
-    // Headline elements (split lines)
-    const headlineLines = headline.querySelectorAll(".headline-line");
+    if (prefersReducedMotion) {
+      // Respect accessibility preference
+      gsap.set([nav, eyebrow, headlineLines, subtext, visualImg, statItems], {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+      });
+      return;
+    }
 
-    introTl
-      .fromTo(
-        headlineLines,
-        { opacity: 0, y: 35 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.9,
-          stagger: 0.1,
-          ease: "power3.out",
-        }
-      )
-      .fromTo(
-        subtext,
-        { opacity: 0, y: 15 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.7,
-        },
-        "-=0.6"
-      )
-      .fromTo(
-        carImg,
-        { opacity: 0, scale: 0.94, y: 25 },
-        {
-          opacity: 1,
-          scale: 1,
-          y: 0,
-          duration: 1.1,
-          ease: "power2.out",
-        },
-        "-=0.7"
-      )
-      .fromTo(
-        statBoxes,
-        { opacity: 0, y: 20 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.7,
-          stagger: 0.08,
-          ease: "power2.out",
-        },
-        "-=0.6"
-      );
+    // Step 1: Navigation fades in
+    if (nav) {
+      introTl.fromTo(nav, { opacity: 0 }, { opacity: 1, duration: 0.6 });
+    }
+
+    // Step 2: Eyebrow fades upward
+    introTl.fromTo(
+      eyebrow,
+      { opacity: 0, y: 15 },
+      { opacity: 1, y: 0, duration: 0.6 },
+      "-=0.4"
+    );
+
+    // Step 3: Headline reveals line-by-line
+    introTl.fromTo(
+      headlineLines,
+      { opacity: 0, y: 32 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        stagger: 0.08,
+      },
+      "-=0.4"
+    );
+
+    // Step 4: Supporting text appears
+    introTl.fromTo(
+      subtext,
+      { opacity: 0, y: 12 },
+      { opacity: 1, y: 0, duration: 0.6 },
+      "-=0.5"
+    );
+
+    // Step 5: Main visual fades/slides into position
+    introTl.fromTo(
+      visualImg,
+      { opacity: 0, scale: 0.95, y: 20 },
+      {
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        duration: 0.9,
+        ease: "power2.out",
+      },
+      "-=0.6"
+    );
+
+    // Step 6: Statistics appear sequentially
+    introTl.fromTo(
+      statItems,
+      { opacity: 0, y: 16 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        stagger: 0.08,
+      },
+      "-=0.5"
+    );
 
     // -------------------------------------------------------------
-    // 2. SCROLL-DRIVEN ANIMATION (GSAP ScrollTrigger)
+    // 2. CORE FEATURE — SCROLL ANIMATION (GSAP ScrollTrigger)
     // -------------------------------------------------------------
-    // Main scroll-controlled vehicle movement across the pinned hero stage
-    const carScrollTimeline = gsap.timeline({
+    // Pinned hero stage: user's scroll position directly controls motion
+    const scrollTl = gsap.timeline({
       scrollTrigger: {
         trigger: section,
         start: "top top",
         end: "bottom top",
         pin: stage,
-        scrub: 1.2, // Smooth weighted inertia
+        scrub: 1.2, // Smooth interpolation and weighted inertia
+        anticipatePin: 1,
         invalidateOnRefresh: true,
-        onUpdate: (self) => {
-          const progress = self.progress;
-
-          // Milestone-based indicator highlights on performance stats
-          statBoxes.forEach((box, i) => {
-            const stat = PERFORMANCE_STATS[i];
-            const indicator = box.querySelector(".stat-indicator") as HTMLElement | null;
-            if (indicator) {
-              if (progress >= stat.threshold - 0.08) {
-                indicator.style.backgroundColor = "#d4af37";
-                indicator.style.opacity = "1";
-                box.style.borderColor = "rgba(212, 175, 55, 0.4)";
-              } else {
-                indicator.style.backgroundColor = "transparent";
-                indicator.style.opacity = "0.2";
-                box.style.borderColor = "rgba(255, 255, 255, 0.08)";
-              }
-            }
-          });
-        },
       },
     });
 
-    // Original cinematic movement path:
-    // As the user scrolls, the hypercar sweeps across the hero,
-    // scaling up into dynamic focus, with realistic steering angle
-    carScrollTimeline
-      .to(carWrapper, {
-        xPercent: -35,
-        yPercent: 4,
-        scale: 1.08,
-        rotation: -1.6,
+    // Original motion path:
+    // Visual glides across the stage, scaling subtly and experiencing natural yaw
+    scrollTl
+      .to(visualWrapper, {
+        xPercent: -22,
+        scale: 1.05,
+        rotation: -1.2,
         ease: "power1.inOut",
-        duration: 0.6,
+        duration: 0.35,
       })
-      .to(carWrapper, {
-        xPercent: -65,
-        yPercent: -2,
+      .to(visualWrapper, {
+        xPercent: -45,
         scale: 1.02,
-        rotation: 0.8,
+        rotation: 0.4,
         ease: "power1.inOut",
         duration: 0.4,
+      })
+      .to(visualWrapper, {
+        xPercent: -60,
+        scale: 0.98,
+        rotation: -0.2,
+        ease: "power1.inOut",
+        duration: 0.25,
       });
 
-    // Subtle parallax depth on headline & supporting copy during scroll
+    // Subtle typography response to scroll
     gsap.to(headline, {
-      opacity: 0.3,
-      yPercent: -12,
+      y: -30,
+      opacity: 0.75,
       ease: "none",
       scrollTrigger: {
         trigger: section,
@@ -201,9 +185,10 @@ export const Hero: React.FC = () => {
       },
     });
 
-    gsap.to(subtext, {
-      opacity: 0.2,
-      yPercent: -8,
+    // Subtle statistics response to scroll
+    gsap.to(statItems, {
+      y: -10,
+      opacity: 0.85,
       ease: "none",
       scrollTrigger: {
         trigger: section,
@@ -215,7 +200,7 @@ export const Hero: React.FC = () => {
 
     return () => {
       introTl.kill();
-      carScrollTimeline.kill();
+      scrollTl.kill();
       ScrollTrigger.getAll().forEach((st) => st.kill());
     };
   }, []);
@@ -223,125 +208,103 @@ export const Hero: React.FC = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full bg-[#0b0c0f]"
+      className="motion-section relative w-full bg-[#f5f4f0]"
       style={{ height: "260vh" }}
       id="hero"
     >
-      {/* Pinned 100vh Hero Stage */}
+      {/* Pinned Viewport Stage */}
       <div
         ref={stageRef}
-        className="sticky top-0 h-screen w-full flex flex-col justify-between px-6 sm:px-10 md:px-16 pt-24 pb-8 overflow-hidden select-none"
+        className="motion-stage sticky top-0 h-screen w-full flex flex-col justify-between px-6 sm:px-12 md:px-20 pt-28 pb-10 overflow-hidden select-none"
       >
-        {/* Subtle Ambient Studio Lighting behind vehicle */}
+        {/* Upper Two-Part Composition: Headline (Left) & Visual (Right/Center) */}
+        <div className="relative w-full flex-1 flex flex-col lg:flex-row items-start justify-between mt-2 md:mt-6">
+          {/* Left Side: Eyebrow, Letter-Spaced Headline, Supporting Statement */}
+          <div className="relative z-10 max-w-xl">
+            {/* Small Eyebrow */}
+            <div
+              ref={eyebrowRef}
+              className="text-[11px] font-mono tracking-[0.25em] text-[#666666] uppercase mb-4"
+            >
+              SCROLL STUDY / 01
+            </div>
+
+            {/* Large Letter-Spaced Headline: M O V E   W I T H   P U R P O S E */}
+            <h1
+              ref={headlineRef}
+              className="flex flex-col font-extrabold uppercase text-5xl sm:text-7xl md:text-[5.5rem] lg:text-[6.5rem] xl:text-[7.5rem] leading-[0.92] text-[#111111] tracking-[0.16em] sm:tracking-[0.2em] md:tracking-[0.26em]"
+            >
+              <span className="headline-line inline-block will-change-transform">
+                M O V E
+              </span>
+              <span className="headline-line inline-block will-change-transform">
+                W I T H
+              </span>
+              <span className="headline-line inline-block will-change-transform">
+                P U R P O S E
+              </span>
+            </h1>
+
+            {/* Small Supporting Text */}
+            <p
+              ref={subtextRef}
+              className="mt-6 text-xs sm:text-sm text-[#666666] font-normal max-w-xs sm:max-w-sm leading-relaxed tracking-wide"
+            >
+              An exploration of movement, proportion and scroll.
+            </p>
+          </div>
+
+          {/* Right / Center: Large High-Resolution Automotive Visual */}
+          <div className="absolute top-[52%] lg:top-[48%] -translate-y-1/2 right-[-12%] sm:right-[-6%] md:right-[0%] lg:right-[3%] w-[96vw] sm:w-[82vw] md:w-[68vw] lg:w-[58vw] max-w-[980px] pointer-events-none z-20">
+            <div ref={visualWrapperRef} className="relative will-change-transform">
+              <img
+                ref={visualImgRef}
+                src={`${basePath}/editorial_car.jpg`}
+                alt="Automotive motion visual study"
+                className="w-full h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.12)] will-change-transform"
+                style={{ mixBlendMode: "multiply" }}
+                draggable={false}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ------------------------------------------------------------- */}
+        {/* Bottom: Four Minimal Statistics                               */}
+        {/* ------------------------------------------------------------- */}
         <div
-          className="absolute top-1/2 right-[15%] -translate-y-1/2 w-[700px] h-[400px] pointer-events-none rounded-full blur-[160px]"
-          style={{
-            background: "radial-gradient(circle, rgba(212,175,55,0.09) 0%, rgba(11,12,15,0) 70%)",
-          }}
-        />
-
-        {/* ------------------------------------------------------------- */}
-        {/* Top/Left: Editorial Letter-Spaced Headline                    */}
-        {/* ------------------------------------------------------------- */}
-        <div className="relative z-10 max-w-2xl">
-          {/* Subtle Category Pretitle */}
-          <div className="flex items-center gap-2 mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
-            <span className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#d4af37]">
-              01 // THE NEXT ERA OF VELOCITY
-            </span>
-          </div>
-
-          {/* Letter-Spaced Headline: D R I V E   T H E   F U T U R E */}
-          <div
-            ref={headlineRef}
-            className="flex flex-col font-black uppercase text-4xl sm:text-6xl md:text-7xl lg:text-[5.5rem] xl:text-[6.5rem] leading-[0.92] text-white tracking-[0.18em] sm:tracking-[0.22em] md:tracking-[0.28em]"
-          >
-            <span className="headline-line inline-block will-change-transform">
-              D R I V E
-            </span>
-            <span className="headline-line inline-block text-white/90 will-change-transform">
-              T H E
-            </span>
-            <span className="headline-line inline-block text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-gray-400 will-change-transform">
-              F U T U R E
-            </span>
-          </div>
-
-          {/* Editorial Supporting Copy */}
-          <p
-            ref={subtextRef}
-            className="mt-4 text-xs sm:text-sm text-gray-400 font-normal max-w-md leading-relaxed tracking-wide"
-          >
-            Performance engineered for the next generation of pure electric velocity.
-            Sculpted carbon aerodynamics meeting dual-motor instant torque.
-          </p>
-        </div>
-
-        {/* ------------------------------------------------------------- */}
-        {/* Center / Right: The Hypercar Main Visual                      */}
-        {/* ------------------------------------------------------------- */}
-        <div className="absolute top-[48%] -translate-y-1/2 right-[-15%] sm:right-[-5%] md:right-[2%] lg:right-[6%] w-[95vw] sm:w-[80vw] md:w-[65vw] lg:w-[56vw] max-w-[960px] pointer-events-none z-20">
-          <div ref={carWrapperRef} className="relative will-change-transform">
-            <img
-              ref={carImgRef}
-              src={`${basePath}/hypercar.jpg`}
-              alt="AURA GT Electric Hypercar"
-              className="w-full h-auto object-contain rounded-2xl drop-shadow-[0_30px_60px_rgba(0,0,0,0.85)] will-change-transform"
-              draggable={false}
-            />
-          </div>
-        </div>
-
-        {/* ------------------------------------------------------------- */}
-        {/* Bottom: Four Performance Statistics (Typography-driven)       */}
-        {/* ------------------------------------------------------------- */}
-        <div className="relative z-30 w-full pt-4 border-t border-white/10">
-          <div
-            ref={statsContainerRef}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8"
-          >
-            {PERFORMANCE_STATS.map((stat, index) => (
+          ref={statsRef}
+          className="relative z-30 w-full pt-6 border-t border-[#e2e0d8]"
+        >
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10">
+            {STATS.map((stat, index) => (
               <div
-                key={stat.id}
+                key={stat.label}
                 ref={(el) => {
-                  statBoxRefs.current[index] = el;
+                  statItemRefs.current[index] = el;
                 }}
-                className="flex flex-col justify-start border-l border-white/10 pl-4 py-1 transition-all duration-300"
+                className="flex flex-col border-l border-[#d8d6ce] pl-4 sm:pl-5 py-0.5"
               >
-                <div className="flex items-center gap-1.5 mb-1">
-                  <span className="stat-indicator w-1.5 h-1.5 rounded-full border border-[#d4af37]/40 bg-transparent transition-all duration-300" />
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-gray-400">
-                    METRIC 0{index + 1}
-                  </span>
-                </div>
-
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white font-sans">
+                  <span className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-[#111111] font-sans">
                     {stat.value}
                   </span>
-                  <span className="text-sm sm:text-base font-mono text-[#d4af37] font-semibold">
+                  <span className="text-sm sm:text-base font-mono font-medium text-[#666666]">
                     {stat.unit}
                   </span>
                 </div>
-
-                <span className="text-[11px] sm:text-xs text-gray-400 font-medium mt-0.5 leading-snug">
+                <span className="text-[10px] sm:text-[11px] font-mono tracking-widest uppercase text-[#666666] mt-1">
                   {stat.label}
                 </span>
               </div>
             ))}
           </div>
 
-          {/* Minimal Scroll Prompt */}
-          <div className="flex items-center justify-between mt-6 text-[10px] font-mono text-gray-400 uppercase tracking-widest">
-            <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-pulse" />
-              SCROLL DRIVEN INTERACTION
-            </span>
-            <span className="hidden sm:flex items-center gap-1 text-gray-400">
-              EXPLORE PERFORMANCE <ArrowDown className="w-3 h-3 text-[#d4af37] inline" />
-            </span>
-            <span>AURA MOTOR CARS © 2026</span>
+          {/* Minimal Editorial Subtext */}
+          <div className="flex items-center justify-between mt-6 text-[10px] font-mono text-[#888888] uppercase tracking-widest">
+            <span>SCROLL TO MODULATE TRAJECTORY</span>
+            <span className="hidden sm:inline">PROPORTION / MOTION STUDY</span>
+            <span>2026</span>
           </div>
         </div>
       </div>
