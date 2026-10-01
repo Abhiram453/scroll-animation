@@ -4,9 +4,9 @@ import React from "react";
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="w-full bg-[#fbfbfa] border-t border-[#e8e6de] py-12 px-6 text-center text-xs text-[#888888]">
+    <footer className="w-full bg-[#f8f7f4] border-t border-[#e5e4de] py-10 px-6 text-center text-xs text-[#888888]">
       <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 font-mono">
-        <span>SCROLL-DRIVEN HERO ANIMATION</span>
+        <span>ITZFIZZ / SCROLL-DRIVEN HERO</span>
         <div className="flex items-center gap-6">
           <a
             href="https://abhiram453.github.io/scroll-animation/"

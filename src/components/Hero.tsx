@@ -8,19 +8,26 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+const WORD_1 = ["W", "E", "L", "C", "O", "M", "E"];
+const WORD_2 = ["I", "T", "Z", "F", "I", "Z", "Z"];
+
 const STATS = [
   { value: "58%", label: "Increase in pick up point use" },
   { value: "23%", label: "Decreased in customer phone calls" },
   { value: "27%", label: "Increase in pick up point use" },
-  { value: "40%", label: "Decreased in customer phone calls" },
+  { value: "40%", label: "Reduction in turnaround time" },
 ];
 
 export const Hero: React.FC = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const headlineRef = useRef<HTMLHeadingElement>(null);
+  const labelRef = useRef<HTMLDivElement>(null);
+
+  const roadRef = useRef<HTMLDivElement>(null);
   const carWrapperRef = useRef<HTMLDivElement>(null);
   const carImgRef = useRef<HTMLImageElement>(null);
+
+  const letterRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const statItemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Base path for GitHub Pages asset resolution
@@ -31,26 +38,20 @@ export const Hero: React.FC = () => {
   useEffect(() => {
     const section = sectionRef.current;
     const stage = stageRef.current;
-    const headline = headlineRef.current;
+    const label = labelRef.current;
+    const road = roadRef.current;
     const carWrapper = carWrapperRef.current;
     const carImg = carImgRef.current;
+    const letters = letterRefs.current.filter(Boolean) as HTMLSpanElement[];
     const statItems = statItemRefs.current.filter(Boolean) as HTMLDivElement[];
 
-    if (!section || !stage || !headline || !carWrapper || !carImg) return;
+    if (!section || !stage || !road || !carWrapper || !carImg) return;
 
     // Check for prefers-reduced-motion
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // -------------------------------------------------------------
-    // 1. INITIAL LOAD ANIMATION (GSAP Timeline)
-    // -------------------------------------------------------------
-    const introTl = gsap.timeline({
-      defaults: { ease: "power2.out" },
-      delay: 0.1,
-    });
-
     if (prefersReducedMotion) {
-      gsap.set([headline, carImg, statItems], {
+      gsap.set([label, carImg, letters, statItems], {
         opacity: 1,
         y: 0,
         scale: 1,
@@ -58,33 +59,66 @@ export const Hero: React.FC = () => {
       return;
     }
 
-    // Headline: fade in + slight upward movement
+    // -------------------------------------------------------------
+    // 1. INITIAL STATE & LOAD ANIMATION (GSAP Timeline)
+    // -------------------------------------------------------------
+    // Letters initially start hidden in a lower position beneath the road/car
+    gsap.set(letters, {
+      y: 80,
+      opacity: 0,
+      scale: 0.9,
+    });
+
+    const introTl = gsap.timeline({
+      defaults: { ease: "power2.out" },
+      delay: 0.15,
+    });
+
+    // 1. Small label fades in
     introTl.fromTo(
-      headline,
-      { opacity: 0, y: 25 },
-      { opacity: 1, y: 0, duration: 0.8 }
+      label,
+      { opacity: 0, y: -10 },
+      { opacity: 1, y: 0, duration: 0.6 }
     );
 
-    // Car: fade in + slight scale
+    // 2. Car fades and settles into its starting position on the road
     introTl.fromTo(
       carImg,
       { opacity: 0, scale: 0.94 },
-      { opacity: 1, scale: 1, duration: 0.9, ease: "power2.out" },
-      "-=0.5"
+      { opacity: 1, scale: 1, duration: 0.8, ease: "power2.out" },
+      "-=0.4"
     );
 
-    // Statistics: small staggered fade
+    // 3. Statistics animate in sequentially
     introTl.fromTo(
       statItems,
-      { opacity: 0, y: 15 },
+      { opacity: 0, y: 16 },
       { opacity: 1, y: 0, duration: 0.6, stagger: 0.08 },
       "-=0.5"
     );
 
+    // After the intro finishes: CAR AND EVERYTHING STOPS.
+    // Only scroll controls progression.
+
     // -------------------------------------------------------------
     // 2. SCROLL-DRIVEN ANIMATION (GSAP ScrollTrigger)
     // -------------------------------------------------------------
-    // Pinned hero stage: user's scroll position directly controls the car
+    // Calculate horizontal travel distance across the road
+    const calculateTravel = () => {
+      const roadWidth = road.offsetWidth || window.innerWidth;
+      const carWidth = carWrapper.offsetWidth || 240;
+      return Math.max(0, roadWidth - carWidth - 16);
+    };
+
+    let totalTravel = calculateTravel();
+
+    const handleResize = () => {
+      totalTravel = calculateTravel();
+      ScrollTrigger.refresh();
+    };
+
+    window.addEventListener("resize", handleResize);
+
     const scrollTl = gsap.timeline({
       scrollTrigger: {
         trigger: section,
@@ -97,52 +131,82 @@ export const Hero: React.FC = () => {
       },
     });
 
-    // Subtle, weighted, controlled movement across the hero
-    scrollTl
-      .to(carWrapper, {
-        xPercent: -25,
-        yPercent: 3,
-        scale: 1.05,
-        rotation: -1.2,
-        ease: "power1.inOut",
-        duration: 0.45,
-      })
-      .to(carWrapper, {
-        xPercent: -55,
-        yPercent: -2,
-        scale: 1.01,
-        rotation: 0.5,
-        ease: "power1.inOut",
-        duration: 0.55,
-      });
-
-    // Subtle typography response to scroll
-    gsap.to(headline, {
-      y: -25,
-      opacity: 0.8,
-      ease: "none",
-      scrollTrigger: {
-        trigger: section,
-        start: "top top",
-        end: "bottom top",
-        scrub: true,
+    // A. Main horizontal car movement across the road
+    scrollTl.to(
+      carWrapper,
+      {
+        x: () => totalTravel,
+        ease: "none",
+        duration: 1,
       },
-    });
+      0
+    );
 
-    // Subtle statistics response to scroll
-    gsap.to(statItems, {
-      y: -10,
-      opacity: 0.85,
-      ease: "none",
-      scrollTrigger: {
-        trigger: section,
-        start: "top top",
-        end: "bottom top",
-        scrub: true,
+    // B. Subtle physical car motion (suspension tilt and micro vertical settling)
+    scrollTl.to(
+      carWrapper,
+      {
+        rotation: -1,
+        y: 2,
+        ease: "sine.inOut",
+        duration: 0.3,
       },
+      0.1
+    );
+
+    scrollTl.to(
+      carWrapper,
+      {
+        rotation: 0.8,
+        y: -2,
+        ease: "sine.inOut",
+        duration: 0.4,
+      },
+      0.4
+    );
+
+    scrollTl.to(
+      carWrapper,
+      {
+        rotation: 0,
+        y: 0,
+        ease: "sine.inOut",
+        duration: 0.3,
+      },
+      0.8
+    );
+
+    // C. Sequential letter reveal:
+    // As the car drives along the road, each letter emerges from below and rises into place!
+    const totalLetters = letters.length; // 14 letters
+    const startProgress = 0.06;
+    const endProgress = 0.86;
+    const progressStep = (endProgress - startProgress) / totalLetters;
+
+    letters.forEach((letter, i) => {
+      const letterStartTime = startProgress + i * progressStep;
+      const letterDuration = progressStep * 1.6; // smooth overlapping lift
+
+      scrollTl.fromTo(
+        letter,
+        {
+          y: 80, // initial position beneath the road/car
+          opacity: 0,
+          scale: 0.9,
+        },
+        {
+          y: 0, // rises into headline position
+          opacity: 1,
+          scale: 1,
+          duration: letterDuration,
+          ease: "power2.out",
+        },
+        letterStartTime
+      );
     });
 
     return () => {
+      window.removeEventListener("resize", handleResize);
       introTl.kill();
       scrollTl.kill();
       ScrollTrigger.getAll().forEach((st) => st.kill());
@@ -152,48 +216,106 @@ export const Hero: React.FC = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full bg-[#fbfbfa]"
+      className="relative w-full bg-[#f8f7f4]"
       style={{ height: "250vh" }}
       id="hero"
     >
-      {/* Pinned 100vh Viewport Hero Stage */}
+      {/* Pinned 100vh Viewport Stage */}
       <div
         ref={stageRef}
-        className="sticky top-0 h-screen w-full flex flex-col justify-between items-center px-6 sm:px-12 md:px-16 pt-12 md:pt-16 pb-12 overflow-hidden select-none"
+        className="sticky top-0 h-screen w-full flex flex-col justify-between items-center px-6 sm:px-12 md:px-16 pt-8 pb-10 overflow-hidden select-none"
       >
-        {/* Top: Large Letter-Spaced Headline */}
-        <div className="w-full text-center z-10 pt-2">
-          <h1
-            ref={headlineRef}
-            className="font-black text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl tracking-[0.25em] md:tracking-[0.35em] text-[#111111] uppercase will-change-transform"
-          >
-            M O V E &nbsp; W I T H &nbsp; P U R P O S E
-          </h1>
+        {/* TOP: Small Minimal Brand / Micro-Label */}
+        <div
+          ref={labelRef}
+          className="w-full max-w-6xl mx-auto flex items-center justify-between text-[11px] font-mono tracking-[0.25em] text-[#666666] uppercase"
+        >
+          <span>ITZFIZZ / SCROLL STUDY</span>
+          <span className="hidden sm:inline text-[#888888]">SCROLL TO DRIVE</span>
         </div>
 
-        {/* Center: Large Isolated Car Visual (Transparent PNG, No Card, No Border) */}
-        <div className="relative my-auto z-20 flex items-center justify-center w-full pointer-events-none">
-          <div ref={carWrapperRef} className="relative will-change-transform">
-            <img
-              ref={carImgRef}
-              src={`${basePath}/car.png`}
-              alt="Isolated Supercar"
-              className="w-[85vw] sm:w-[75vw] md:w-[65vw] lg:w-[820px] max-w-none h-auto object-contain select-none pointer-events-none drop-shadow-[0_25px_35px_rgba(0,0,0,0.15)] will-change-transform"
-              draggable={false}
-            />
+        {/* UPPER/MIDDLE: Large Headline Area ("W E L C O M E   I T Z F I Z Z") */}
+        <div className="w-full max-w-6xl mx-auto flex flex-col items-center justify-center my-auto pt-4">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 sm:gap-x-10 md:gap-x-14 text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6.5rem] font-black uppercase text-[#111111]">
+            {/* Word 1: W E L C O M E */}
+            <div className="flex items-center gap-x-1.5 sm:gap-x-2.5 md:gap-x-3.5">
+              {WORD_1.map((char, index) => (
+                <span
+                  key={`w1-${index}`}
+                  className="inline-block overflow-hidden py-1"
+                >
+                  <span
+                    ref={(el) => {
+                      letterRefs.current[index] = el;
+                    }}
+                    className="inline-block will-change-transform"
+                    style={{ transform: "translateY(80px)", opacity: 0 }}
+                  >
+                    {char}
+                  </span>
+                </span>
+              ))}
+            </div>
+
+            {/* Word 2: I T Z F I Z Z */}
+            <div className="flex items-center gap-x-1.5 sm:gap-x-2.5 md:gap-x-3.5">
+              {WORD_2.map((char, index) => (
+                <span
+                  key={`w2-${index}`}
+                  className="inline-block overflow-hidden py-1"
+                >
+                  <span
+                    ref={(el) => {
+                      letterRefs.current[WORD_1.length + index] = el;
+                    }}
+                    className="inline-block will-change-transform"
+                    style={{ transform: "translateY(80px)", opacity: 0 }}
+                  >
+                    {char}
+                  </span>
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Bottom: Four Minimal Statistics */}
-        <div className="w-full max-w-6xl mx-auto z-10 pt-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-10 text-center md:text-left">
+        {/* CENTER/LOWER: Road + Isolated Car */}
+        <div className="relative w-full max-w-6xl mx-auto my-auto flex flex-col justify-center">
+          {/* The Road Strip */}
+          <div
+            ref={roadRef}
+            className="relative w-full h-[70px] sm:h-[85px] md:h-[95px] bg-[#18181b] rounded-2xl overflow-hidden shadow-inner flex items-center"
+          >
+            {/* Subtle Center Dashed Lane Marking */}
+            <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-[2px] border-b-2 border-dashed border-white/20" />
+
+            {/* Isolated Car riding directly on the road */}
+            <div
+              ref={carWrapperRef}
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-20 will-change-transform pointer-events-none"
+              style={{ width: "fit-content" }}
+            >
+              <img
+                ref={carImgRef}
+                src={`${basePath}/car.png`}
+                alt="McLaren 720S"
+                className="h-[55px] sm:h-[70px] md:h-[80px] w-auto object-contain select-none pointer-events-none drop-shadow-[0_12px_20px_rgba(0,0,0,0.45)] will-change-transform"
+                draggable={false}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* BOTTOM: Exactly Four Statistics (Minimal Typography) */}
+        <div className="w-full max-w-6xl mx-auto z-10 pt-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-10">
             {STATS.map((stat, index) => (
               <div
                 key={index}
                 ref={(el) => {
                   statItemRefs.current[index] = el;
                 }}
-                className="flex flex-col items-center md:items-start"
+                className="flex flex-col items-start"
               >
                 <span className="text-3xl sm:text-4xl md:text-5xl font-black text-[#111111] tracking-tight">
                   {stat.value}
