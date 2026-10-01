@@ -1,44 +1,48 @@
 "use client";
 
 import React from "react";
+import { Github, ArrowUpRight } from "lucide-react";
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="w-full bg-[#121212] border-t border-[#222222] py-16 px-6 text-center text-gray-400">
-      <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
-        <div className="flex items-center gap-2">
-          <span className="font-bold text-white text-lg tracking-widest">
-            ITZFIZZ
-          </span>
-          <span className="text-gray-500 text-sm">/</span>
-          <span className="text-gray-400 text-sm">Scroll Animation Demo</span>
+    <footer className="w-full bg-[#08090b] border-t border-white/5 py-16 px-6 sm:px-10 md:px-16 text-gray-500">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-2 h-2 rounded-full bg-[#d4af37]" />
+            <span className="font-mono text-xs uppercase tracking-[0.25em] text-white font-semibold">
+              AURA MOTOR CARS
+            </span>
+          </div>
+          <p className="text-xs text-gray-500 max-w-sm">
+            Scroll-Driven Hero Section Animation Assignment.
+            Designed and engineered with Next.js, React, Tailwind CSS, and GSAP ScrollTrigger.
+          </p>
         </div>
 
-        <p className="text-sm text-gray-500 max-w-md mx-auto leading-relaxed">
-          Recreation of the scroll-driven hero section inspired by the reference,
-          implemented with Next.js, React, Tailwind CSS, and GSAP ScrollTrigger.
-        </p>
-
-        <div className="flex items-center gap-6 text-sm">
+        <div className="flex items-center gap-6 text-xs font-mono">
           <a
             href="https://abhiram453.github.io/scroll-animation/"
-            className="text-white hover:text-[#45db7d] transition-colors font-medium underline underline-offset-4"
+            className="text-gray-400 hover:text-white transition-colors flex items-center gap-1"
           >
-            Live Demo
+            <span>Live Webpage</span>
+            <ArrowUpRight className="w-3 h-3 text-[#d4af37]" />
           </a>
           <a
             href="https://github.com/Abhiram453/scroll-animation"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-white hover:text-[#45db7d] transition-colors font-medium underline underline-offset-4"
+            className="text-gray-400 hover:text-white transition-colors flex items-center gap-1.5"
           >
-            GitHub Repository
+            <Github className="w-3.5 h-3.5" />
+            <span>GitHub Repository</span>
           </a>
         </div>
+      </div>
 
-        <p className="text-xs text-gray-600 pt-4">
-          © {new Date().getFullYear()} Abhiram • Scroll-Driven Motion
-        </p>
+      <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between text-[11px] text-gray-400 gap-4">
+        <span>© {new Date().getFullYear()} Abhiram • Frontend Development Assignment</span>
+        <span>GSAP 3 ScrollTrigger • Hardware Accelerated</span>
       </div>
     </footer>
   );
